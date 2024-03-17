@@ -1,0 +1,29 @@
+.add-customer-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column; /* Arrange items in a column */
+    align-items: stretch; /* Stretch items to fill the width */
+  }
+  
+  .modal-content label {
+    margin-bottom: 10px; /* Add some margin between labels */
+  }
+  
+  .modal-content button {
+    margin-top: 10px; /* Add margin above buttons */
+  }

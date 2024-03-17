@@ -1,0 +1,101 @@
+.customer-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  .customer-table th,
+  .customer-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .customer-table th {
+    background-color: #f2f2f2;
+  }
+  button:disabled {
+    background-color: #ccc; /* Use a grey color for disabled buttons */
+    cursor: not-allowed; /* Change cursor to not-allowed for disabled buttons */
+  }
+
+.customer-list {
+    margin: 20px;
+  }
+  
+  .customer-container {
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    border-radius: 5px;
+  }
+  
+  .customer-header {
+    background-color: #f0f0f0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .customer-header span {
+    display: inline-block;
+    margin: 0;
+  };
+
+  .customer-header .customer-actions {
+    margin-left: auto;
+  };
+  
+  .customer-details {
+    padding: 10px;
+  }
+  
+  .expandable-section {
+    cursor: pointer;
+    color: #007bff;
+    margin-bottom: 5px;
+  }
+  
+  .nested-list {
+    list-style-type: none;
+    padding-left: 15px;
+  }
+  .user-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  };
+  .user-panel h2 {
+    display: inline-block;
+    margin: 0;
+  };
+
+  .user-panel button {
+    margin-left: auto;
+  };
+  .customer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+  }
+  
+  .customer-header-icons {
+    display: flex;
+    align-items: center;
+  }
+  
+  .edit-icon,
+  .delete-icon {
+    margin-left: 10px;
+    color: #007bff;
+    cursor: pointer;
+  }
+
+  .edit-icon.disabled {
+    color: #ccc; /* Change the color to indicate it's disabled */
+    pointer-events: none; /* Disable mouse events */
+  }
+
+  
