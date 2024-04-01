@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import AddCustomer from './AddCustomer';
 import ConfirmationPopup from './ConfirmationPopup';
+import AddBillingDetails from './AddBillingDetails';
+import InformationPopup from './InformationPopup';
 
 const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCustomer }) => {
   const [isCustomerDetailsExpanded, setCustomerDetailsExpanded] = useState(false);
@@ -13,6 +15,8 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [customerToBeDeleted, setCustomerToBeDeleted] = useState(null);
   const [showBillingDetailsPopup, setShowBillingDetailsPopup] = useState(false);
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
+  const [infoMessage, setInfoMessage] = useState('');
 
   const toggleCustomerDetails = () => {
     setCustomerDetailsExpanded(!isCustomerDetailsExpanded);
@@ -53,6 +57,28 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
     setCustomerToBeDeleted(null);
     setConfirmationMessage('');
     setShowConfirmationPopup(false);
+  }
+
+  const handleAddBillingDetailsClick = () =>{
+    setSectedCustomer(customer);
+    setShowBillingDetailsPopup(true);
+  }
+
+  const handleCloseBillingDetails = () =>{
+    setSectedCustomer(null);
+    setShowBillingDetailsPopup(false);
+  }
+
+  const handleAddBillingDetails = (customerData) => {
+    setInfoMessage(`Billing details added for "${customerData.customer_name}" customer!`);
+    setShowInfoPopup(true);
+    setSectedCustomer(null);
+    handleCloseBillingDetails();
+  }
+
+  const handleEditBillingDetails = (customer) => {
+    setSectedCustomer(customer);
+    setShowBillingDetailsPopup(true);
   }
 
 
@@ -109,6 +135,7 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
                         <th>S.No</th>
                         <th> Metrics Type</th>
                         <th> Metrics Fee</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -117,6 +144,11 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
                             <td>{index+1}</td>
                             <td>{billing.metrics_type}</td>
                             <td>{billing.metrics_fee}</td>
+                            {index === 0 && ( // Render Actions column for the first row only
+                            <td rowSpan={customer.customer_billing_details.length}>
+                                <FaEdit onClick={userRole === "admin" ? () => handleEditBillingDetails(customer) : null} className={`edit-icon ${userRole !== "admin" ? 'disabled' : ''}`} />
+                            </td>
+                            )}
                         </tr>
                     ))
                     }
@@ -124,12 +156,15 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
             </table>):(<p>No Billing details</p>)
           )
           }
+          {isBillingDetailsExpanded && (<button disabled={customer.customer_billing_details.length>1 || (!customer.is_benchmarks_enabled && customer.customer_billing_details.length>0)} onClick={handleAddBillingDetailsClick}>Add Billing Details</button>)}
         </div>
       )}
       {
         showAddCustomerPopup && (<AddCustomer onClose={handleAddCustomerPopupClose} onAddCustomer={handleAddCustomer} customerData={selectedCustomer}></AddCustomer>)
       }
       {showConfirmationPopup &&(<ConfirmationPopup onConfirm={handleDeleteConfirm} onCancel={handleDeleteCancel} message={confirmationMessage}></ConfirmationPopup>)}
+      {showBillingDetailsPopup &&(<AddBillingDetails onCloseBillingDetails={handleCloseBillingDetails} onAddBillingDetails={handleAddBillingDetails} customerData={selectedCustomer}></AddBillingDetails>)}
+      {showInfoPopup && (<InformationPopup onOk={()=>{setShowInfoPopup(false)}} message={infoMessage}></InformationPopup>)}
     </div>
   );
 };
