@@ -4,6 +4,7 @@ import AddCustomer from './AddCustomer';
 import ConfirmationPopup from './ConfirmationPopup';
 import AddBillingDetails from './AddBillingDetails';
 import InformationPopup from './InformationPopup';
+import AddClientMapping from './AddClientMapping';
 
 const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCustomer }) => {
   const [isCustomerDetailsExpanded, setCustomerDetailsExpanded] = useState(false);
@@ -17,6 +18,7 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
   const [showBillingDetailsPopup, setShowBillingDetailsPopup] = useState(false);
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [infoMessage, setInfoMessage] = useState('');
+  const [showAddClientMappingPopup, setShowAddClientMappingPopup] = useState(false);
 
   const toggleCustomerDetails = () => {
     setCustomerDetailsExpanded(!isCustomerDetailsExpanded);
@@ -64,21 +66,32 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
     setShowBillingDetailsPopup(true);
   }
 
-  const handleCloseBillingDetails = () =>{
+  const handleClosePopup = () =>{
     setSectedCustomer(null);
     setShowBillingDetailsPopup(false);
+    setShowAddClientMappingPopup(false);
   }
 
   const handleAddBillingDetails = (customerData) => {
     setInfoMessage(`Billing details added for "${customerData.customer_name}" customer!`);
     setShowInfoPopup(true);
-    setSectedCustomer(null);
-    handleCloseBillingDetails();
+    handleClosePopup();
+  }
+
+  const handleAddClientMapping = (customerData) => {
+    setInfoMessage(`Client Mapping details added for "${customerData.customer_name}" customer!`);
+    setShowInfoPopup(true);
+    handleClosePopup();
   }
 
   const handleEditBillingDetails = (customer) => {
     setSectedCustomer(customer);
     setShowBillingDetailsPopup(true);
+  }
+
+  const handleAddClientMappingClick = () =>{
+    setSectedCustomer(customer);
+    setShowAddClientMappingPopup(true);
   }
 
 
@@ -115,7 +128,7 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
                 </thead>
                 <tbody>
                     {customer.customer_client_mapping.map((client_id, index)=>(
-                        <tr>
+                        <tr key={index+1}>
                             <td>{index+1}</td>
                             <td>{client_id}</td>
                         </tr>
@@ -123,7 +136,7 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
                     }
                 </tbody>
             </table>):(<p>No Client Mapping</p>))}
-          
+          {isClientMappingExpanded && (<button disabled={customer.customer_client_mapping.length>9} onClick={handleAddClientMappingClick}>Add Client Mapping</button>)}
 
           <div className="expandable-section" onClick={toggleBillingDetails}>
             Billing Details
@@ -163,7 +176,8 @@ const CustomerDetails = ({ index, customer, userRole, onAddCustomer, onDeleteCus
         showAddCustomerPopup && (<AddCustomer onClose={handleAddCustomerPopupClose} onAddCustomer={handleAddCustomer} customerData={selectedCustomer}></AddCustomer>)
       }
       {showConfirmationPopup &&(<ConfirmationPopup onConfirm={handleDeleteConfirm} onCancel={handleDeleteCancel} message={confirmationMessage}></ConfirmationPopup>)}
-      {showBillingDetailsPopup &&(<AddBillingDetails onCloseBillingDetails={handleCloseBillingDetails} onAddBillingDetails={handleAddBillingDetails} customerData={selectedCustomer}></AddBillingDetails>)}
+      {showBillingDetailsPopup &&(<AddBillingDetails onCloseBillingDetails={handleClosePopup} onAddBillingDetails={handleAddBillingDetails} customerData={selectedCustomer}></AddBillingDetails>)}
+      {showAddClientMappingPopup &&(<AddClientMapping onCloseClientMapping={handleClosePopup} onAddClientMapping={handleAddClientMapping} customerData={selectedCustomer}></AddClientMapping>)}
       {showInfoPopup && (<InformationPopup onOk={()=>{setShowInfoPopup(false)}} message={infoMessage}></InformationPopup>)}
     </div>
   );
