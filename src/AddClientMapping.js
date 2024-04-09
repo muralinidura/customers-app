@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaMinus } from "react-icons/fa";
+import { FaMinus, FaPlus } from "react-icons/fa";
 
 const AddClientMapping = ({onAddClientMapping, onCloseClientMapping, customerData})=>{
     const [newCustomerClientMappings, setNewCustomerClientMappings] = useState([{ id: 1, clientId: '' }]);
@@ -27,6 +27,16 @@ const AddClientMapping = ({onAddClientMapping, onCloseClientMapping, customerDat
             }
             return clientMapping;
         });
+        setNewCustomerClientMappings(updatedCustomerClientMappings);
+    }
+    const handleAddClientRowClick = () =>{
+        if(newCustomerClientMappings.length<10){
+            const newClientRow = {id:newCustomerClientMappings.length+1, clientId:''};
+            setNewCustomerClientMappings([...newCustomerClientMappings, newClientRow]);
+        }
+    }
+    const handleRemoveClientRowClick = (id)=>{
+        const updatedCustomerClientMappings = newCustomerClientMappings.filter(clientMapping=>id!==clientMapping.id);
         setNewCustomerClientMappings(updatedCustomerClientMappings);
     }
 
@@ -60,12 +70,19 @@ const AddClientMapping = ({onAddClientMapping, onCloseClientMapping, customerDat
                                         onChange={(e)=>handleClientMappingChange(clientMapping.id, e.target.value)}
                                     />
                                 </td>
-                                <td>{<FaMinus></FaMinus>}</td>
+                                <td>{newCustomerClientMappings.length>1&&(<FaMinus onClick={()=>handleRemoveClientRowClick(clientMapping.id)} className="action-icon"></FaMinus>)}</td>
                             </tr>
                         ))
                     }
                 </tbody>
             </table>
+            <div>
+                {newCustomerClientMappings.length < 10 && (
+                <button onClick={handleAddClientRowClick}>
+                    <FaPlus className="action-icon" /> Add Client
+                </button>
+                )}
+            </div>
             <button onClick={handleAddClientMapping}>Add</button>
             <button onClick={onClose}>Cancel</button>
             </div>
