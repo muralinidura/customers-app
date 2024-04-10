@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import CustomerData from "./resources/CustomerData";
 import "./Customers.css";
 import CustomerDetails from "./CustomerDetails";
@@ -7,7 +7,8 @@ import { useNavigate } from "react-router-dom";
 import AddCustomer from "./AddCustomer";
 import InformationPopup from "./InformationPopup";
 import * as XLSX from 'xlsx';
-import ExportCustomersToExcel from "./ExportCustomersToExcel";
+import {exportToExcel} from "./ExportCustomersToExcel";
+import { importCustomers } from "./ImportCustomersFromExcel";
 const Customers = ({loggedInUser, userRole}) => {
   const [customerData, setCustomerData] = useState(CustomerData);
   const [showAddCustomerPopup, setShowAddCustomerPopup] = useState(false);
@@ -20,6 +21,7 @@ const Customers = ({loggedInUser, userRole}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredCustomers, setFilteredCustomers] = useState(CustomerData);
   const [downloadCustomers, setDownloadCustomers] = useState(false);
+  const fileInputRef = useRef(null);
 
    useEffect(()=>{
     if(searchBy==='customer_id'){
@@ -88,105 +90,77 @@ const Customers = ({loggedInUser, userRole}) => {
     setSearchTerm(event.target.value);
   }
   const handleExportToExcelClick = () =>{
-    const customer_details_data = filteredCustomers.map(entry=>{
-      const {customer_client_mapping, customer_billing_details, ...rest}=entry;
-      return rest;
-    })
-    const worksheet = XLSX.utils.json_to_sheet(customer_details_data);
-
-    // Create a workbook and add the worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Customer Details');
-
-    const customerClientMappingStrings = filteredCustomers.map(entry => ({
-      ...entry,
-      customer_client_mapping: entry.customer_client_mapping.join(', '),
-    }));
-    const customer_client_mapping_data = customerClientMappingStrings.map(entry=>{
-      const {customer_name, customer_billing_details, ica, is_benchmarks_enabled, sow_start_date, sow_end_date, ...rest} = entry;
-      return rest;
-    });
-
-    const worksheetWithClientMappingStrings = XLSX.utils.json_to_sheet(customer_client_mapping_data);
-    XLSX.utils.book_append_sheet(workbook, worksheetWithClientMappingStrings, 'Client Mapping');
-
-    const customerBillingDetailsStrings = filteredCustomers.map(entry => ({
-      ...entry,
-      customer_billing_details: entry.customer_billing_details.map(detail => `${detail.metrics_type}: ${detail.metrics_fee}`).join(', ')
-    }));
-
-    const customer_billing_details_data = customerBillingDetailsStrings.map(entry=>{
-      const {customer_name, customer_client_mapping, ica, is_benchmarks_enabled, sow_start_date, sow_end_date, ...rest} = entry;
-      return rest;
-    });
-
-    const worksheetWithBillingDetailsStrings = XLSX.utils.json_to_sheet(customer_billing_details_data);
-    XLSX.utils.book_append_sheet(workbook, worksheetWithBillingDetailsStrings, 'Billing Details');
-
-    // Save the workbook as an Excel file
-    XLSX.writeFile(workbook,  'Customers.xlsx');
+    exportToExcel(filteredCustomers);
+    setInfoMessage('Customers information downloaded successfully');
+    setShowInfoPopup(true);
   };
 
   const importExcelData = (event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const workbook = XLSX.read(e.target.result, { type: 'binary' });
-      const importedData = {};
+    // const file = event.target.files[0];
+    // const reader = new FileReader();
+    // reader.onload = (e) => {
+    //   const workbook = XLSX.read(e.target.result, { type: 'binary' });
+    //   const importedData = {};
   
-      workbook.SheetNames.forEach(sheetName => {
-        const worksheet = workbook.Sheets[sheetName];
-        const data = XLSX.utils.sheet_to_json(worksheet);
-        importedData[sheetName] = data;
-      });
+    //   workbook.SheetNames.forEach(sheetName => {
+    //     const worksheet = workbook.Sheets[sheetName];
+    //     const data = XLSX.utils.sheet_to_json(worksheet);
+    //     importedData[sheetName] = data;
+    //   });
   
-      // Process the imported data and merge it with existing filteredCustomers
-      mergeImportedData(importedData);
-    };
+    //   // Process the imported data and merge it with existing filteredCustomers
+    //   mergeImportedData(importedData);
+    // };
   
-    reader.readAsBinaryString(file);
-    alert('customers imported successfully!')
+    // reader.readAsBinaryString(file);
+    setFilteredCustomers(importCustomers(event));
+    setInfoMessage('Customers information uploaded successfully');
+    setShowInfoPopup(true);
   };
   
-  const mergeImportedData = (importedData) => {
-    // Merge data from all three sheets into filteredCustomers
-    const mergedCustomers = [];
+  // const mergeImportedData = (importedData) => {
+  //   // Merge data from all three sheets into filteredCustomers
+  //   const mergedCustomers = [];
   
-    // Merge data from "Customer Details" sheet
-    if (importedData['Customer Details']) {
-      mergedCustomers.push(...importedData['Customer Details']);
-    }
+  //   // Merge data from "Customer Details" sheet
+  //   if (importedData['Customer Details']) {
+  //     mergedCustomers.push(...importedData['Customer Details']);
+  //   }
   
-    // Merge data from "Client Mapping" sheet
-    if (importedData['Client Mapping']) {
-      // Assuming each entry in the client mapping sheet has a customer_id matching with filteredCustomers
-      mergedCustomers.forEach(customer => {
-        const matchingClientMapping = importedData['Client Mapping'].filter(mapping => mapping.customer_id === customer.customer_id);
-        if (matchingClientMapping.length > 0) {
-          customer.customer_client_mapping = matchingClientMapping[0].customer_client_mapping.split(',');
-        }
-      });
-    }
+  //   // Merge data from "Client Mapping" sheet
+  //   if (importedData['Client Mapping']) {
+  //     // Assuming each entry in the client mapping sheet has a customer_id matching with filteredCustomers
+  //     mergedCustomers.forEach(customer => {
+  //       const matchingClientMapping = importedData['Client Mapping'].filter(mapping => mapping.customer_id === customer.customer_id);
+  //       if (matchingClientMapping.length > 0) {
+  //         customer.customer_client_mapping = matchingClientMapping[0].customer_client_mapping.split(',');
+  //       }
+  //     });
+  //   }
   
-    // Merge data from "Billing Details" sheet
-    if (importedData['Billing Details']) {
-      // Assuming each entry in the billing details sheet has a customer_id matching with filteredCustomers
-      mergedCustomers.forEach(customer => {
-        const matchingBillingDetails = importedData['Billing Details'].filter(detail => detail.customer_id === customer.customer_id);
-        if (matchingBillingDetails.length > 0) {
-          const billingDetails = matchingBillingDetails[0].customer_billing_details.split(',');
-          const billingList = [];
-          billingDetails.map(billing=>{
-            billingList.push({metrics_type:billing.split(':')[0], metrics_fee:billing.split(':')[1]})
-          });
-          customer.customer_billing_details=billingList;
-          // customer.customer_billing_details = matchingBillingDetails.map(detail => ({ metrics_type: detail.metrics_type, metrics_fee: detail.metrics_fee }));
-        }
-      });
-    }
+  //   // Merge data from "Billing Details" sheet
+  //   if (importedData['Billing Details']) {
+  //     // Assuming each entry in the billing details sheet has a customer_id matching with filteredCustomers
+  //     mergedCustomers.forEach(customer => {
+  //       const matchingBillingDetails = importedData['Billing Details'].filter(detail => detail.customer_id === customer.customer_id);
+  //       if (matchingBillingDetails.length > 0) {
+  //         const billingDetails = matchingBillingDetails[0].customer_billing_details.split(',');
+  //         const billingList = [];
+  //         billingDetails.map(billing=>{
+  //           billingList.push({metrics_type:billing.split(':')[0], metrics_fee:billing.split(':')[1]})
+  //         });
+  //         customer.customer_billing_details=billingList;
+  //         // customer.customer_billing_details = matchingBillingDetails.map(detail => ({ metrics_type: detail.metrics_type, metrics_fee: detail.metrics_fee }));
+  //       }
+  //     });
+  //   }
   
-    // Update filteredCustomers with merged data
-    setFilteredCustomers(mergedCustomers);
+  //   // Update filteredCustomers with merged data
+  //   setFilteredCustomers(mergedCustomers);
+  // };
+
+  const handleFileUpdloadButtonClick = () => {
+    fileInputRef.current.click();
   };
   
   return (
@@ -210,8 +184,14 @@ const Customers = ({loggedInUser, userRole}) => {
         disabled={searchBy===""}
         onChange={handleSearchTermChange}
       />
-      <button onClick={handleExportToExcelClick}>Export To Excel</button>
-      <input type="file" onChange={importExcelData} accept=".xlsx,.xls" />
+      <br/>
+      <br/>
+      <button onClick={handleExportToExcelClick}>Download Customers</button>
+      &nbsp; &nbsp; &nbsp;
+      
+        <input type="file" onChange={importExcelData} accept=".xlsx,.xls" ref={fileInputRef} style={{ display: 'none' }}/>
+        <button onClick={handleFileUpdloadButtonClick}>Upload Customers</button>
+      
       <br/>
       <div className="customer-list">
         {filteredCustomers.map((customer, index) => (
