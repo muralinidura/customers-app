@@ -10,7 +10,7 @@ const Login = ({ setLoggedInUser, setUserRole }) => {
   const [infoMessage, setInfoMessage] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  function handleLogin (e) {
     // Add your authentication logic here (e.g., API call, validation)
     // For simplicity, this example considers a successful login when a username is provided.
     e.preventDefault();
@@ -23,6 +23,10 @@ const Login = ({ setLoggedInUser, setUserRole }) => {
       else if(username==='SBCA_Prod'){
         setUserRole('admin');
         navigate('/customers');
+      }
+      else if(username==='SBCA_SQL'){
+        setUserRole('admin');
+        navigate('/generateSQL');
       }
       else{
         // alert('User not registered');
@@ -38,7 +42,7 @@ const Login = ({ setLoggedInUser, setUserRole }) => {
       setInfoMessage(`Invalid credentials. Please enter a username and password`);
     }
   };
-  const handleInfoOk =()=>{
+  function handleInfoOk (){
     setShowInfoPopup(false);
     setInfoMessage(``);
   }
